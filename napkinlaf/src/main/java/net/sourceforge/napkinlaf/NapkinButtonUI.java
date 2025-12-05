@@ -11,13 +11,11 @@ import javax.swing.plaf.*;
 import javax.swing.plaf.basic.*;
 import java.awt.*;
 
-@SuppressWarnings({"MethodOverridesStaticMethodOfSuperclass"})
 public class NapkinButtonUI extends BasicButtonUI
         implements NapkinPainter, NapkinTextPainter {
 
     private DrawnLineHolder line;
 
-    @SuppressWarnings({"UnusedDeclaration"})
     public static ComponentUI createUI(JComponent c) {
         return new NapkinButtonUI();
     }
@@ -35,19 +33,18 @@ public class NapkinButtonUI extends BasicButtonUI
     }
 
     @Override
-    protected void paintText(Graphics g, JComponent c, Rectangle textRect,
-            String text) {
-
+    protected void paintText(Graphics g, JComponent c, Rectangle textRect, String text) {
         if (line == null) {
             line = new DrawnLineHolder(new DrawnCubicLineGenerator());
         }
+        
         boolean isDefault = ((JButton) c).isDefaultButton();
-        NapkinUtil.paintButtonText(g, c, textRect, text, getTextShiftOffset(),
+        NapkinUtil.paintButtonText(
+                g, c, textRect, text, getTextShiftOffset(),
                 line, isDefault, this);
     }
 
-    public void superPaintText(Graphics g, JComponent c, Rectangle textRect,
-            String text) {
+    public void superPaintText(Graphics g, JComponent c, Rectangle textRect, String text) {
         super.paintText(g, c, textRect, text);
     }
 
@@ -59,5 +56,5 @@ public class NapkinButtonUI extends BasicButtonUI
     public void superPaint(Graphics g, JComponent c) {
         super.update(g, c);
     }
+    
 }
-

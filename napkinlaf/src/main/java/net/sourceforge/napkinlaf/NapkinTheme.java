@@ -1,18 +1,20 @@
 package net.sourceforge.napkinlaf;
 
-import static net.sourceforge.napkinlaf.NapkinKnownTheme.*;
-import static net.sourceforge.napkinlaf.NapkinThemeColor.*;
-import net.sourceforge.napkinlaf.fonts.PatchedFontUIResource;
-import net.sourceforge.napkinlaf.sketch.AbstractSketcher;
-import net.sourceforge.napkinlaf.sketch.sketchers.DraftSketcher;
-import net.sourceforge.napkinlaf.sketch.sketchers.JotSketcher;
-import net.sourceforge.napkinlaf.util.AlphaColorUIResource;
-import net.sourceforge.napkinlaf.util.NapkinBackground;
-import net.sourceforge.napkinlaf.util.NapkinConstants;
+import static net.sourceforge.napkinlaf.NapkinKnownTheme.BASIC_THEME;
+import static net.sourceforge.napkinlaf.NapkinKnownTheme.POPUP_THEME;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.BACKGROUND_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.CHECK_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.HIGHLIGHT_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.PEN_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.RADIO_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.ROLLOVER_COLOR;
+import static net.sourceforge.napkinlaf.NapkinThemeColor.SELECTION_COLOR;
 
-import javax.swing.*;
-import javax.swing.plaf.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -25,6 +27,17 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
+import javax.swing.plaf.UIResource;
+
+import net.sourceforge.napkinlaf.fonts.PatchedFontUIResource;
+import net.sourceforge.napkinlaf.sketch.AbstractSketcher;
+import net.sourceforge.napkinlaf.sketch.sketchers.DraftSketcher;
+import net.sourceforge.napkinlaf.sketch.sketchers.JotSketcher;
+import net.sourceforge.napkinlaf.util.AlphaColorUIResource;
+import net.sourceforge.napkinlaf.util.NapkinBackground;
+import net.sourceforge.napkinlaf.util.NapkinConstants;
+
 /**
  * This class describes a theme for the particular drawing style.  You can
  * specify such things as the font, text color, the sketcher that wll be used to
@@ -33,27 +46,27 @@ import java.util.logging.Logger;
  * parameters, or you can define your own sketcher to get a complete different
  * style.
  */
-@SuppressWarnings({"WeakerAccess"})
 public class NapkinTheme {
+
     private final String name;
     private final String description;
-    private final Map<NapkinThemeColor, Color> colors =
-            new EnumMap<NapkinThemeColor, Color>(NapkinThemeColor.class);
+    private final Map<NapkinThemeColor, Color> colors = new EnumMap<NapkinThemeColor, Color>(NapkinThemeColor.class);
     private final Font textFont;
     private final Font boldTextFont;
     private final Font fixedFont;
     private final AbstractSketcher sketcher;
     private final NapkinBackground paper;
     private final NapkinBackground erasure;
-    private Map<NapkinKnownTheme, NapkinTheme> variants =
-            new EnumMap<NapkinKnownTheme, NapkinTheme>(NapkinKnownTheme.class);
+    private Map<NapkinKnownTheme, NapkinTheme> variants = new EnumMap<NapkinKnownTheme, NapkinTheme>(NapkinKnownTheme.class);
 
     /**
-     * Creates a new theme with a calculated popup theme.  The popup theme will
-     * be the same as the main one, but with a different paper and highlight. If
-     * the name of this them is <tt>"Foo"</tt>, the name of the derived
-     * background will be <tt>"FooPopup"</tt>. If you want to specifiy a full
-     * theme for popups, you can use the other constructor.
+     * Creates a new theme with a calculated popup theme.  
+     * The popup theme will be the same as the main one, 
+     * but with a different paper and highlight. For example... 
+     * If the name of this theme is <tt>"Foo"</tt>, the name of the derived
+     * background will be <tt>"FooPopup"</tt>. 
+     * 
+     * If you want to specify a full theme for popups, then use the other constructor.
      *
      * @param name               The short name of the theme.
      * @param description        A human-readable description of the theme (in
@@ -279,17 +292,15 @@ public class NapkinTheme {
 
     /** This class manages the installation and switching of themes. */
     public static class Manager {
-        private static final Map<String, NapkinTheme> themes =
-                new HashMap<String, NapkinTheme>();
         private static NapkinTheme currentTheme;
+
+        private static final Map<String, NapkinTheme> themes = new HashMap<String, NapkinTheme>();
+        private static final Class<NapkinLookAndFeel> THIS_CLASS = NapkinLookAndFeel.class;
 
         private static final String DEFAULT_THEME = "napkin";
         private static final String RESOURCE_PATH = "resources/";
 
-        private static final Class<NapkinLookAndFeel> THIS_CLASS =
-                NapkinLookAndFeel.class;
-        private static final Logger LOG = LogManager.getLogManager().getLogger(
-                THIS_CLASS.getName());
+        private static final Logger LOG = LogManager.getLogManager().getLogger(THIS_CLASS.getName());
         private static final String DEBUG_THEME = "debug";
         private static final String BLUEPRINT_THEME = "blueprint";
 
@@ -302,8 +313,7 @@ public class NapkinTheme {
             });
         }
 
-        @SuppressWarnings(
-                {"NonThreadSafeLazyInitialization", "AccessOfSystemProperties"})
+
         private static void setup() {
             Color checkGreen = Color.GREEN.darker();
             //!! Make this selectable
@@ -374,23 +384,20 @@ public class NapkinTheme {
             }
         }
 
-        private static NapkinBackground background(String image, int top,
-                int left, int bottom, int right) {
-
+        public static NapkinBackground background(String image, int top, int left, int bottom, int right) {
             ImageIcon icon = getBackgroundImage(RESOURCE_PATH + image);
             return new NapkinBackground(icon, top, left, bottom, right);
         }
 
-        private static NapkinBackground background(String image) {
+        public static NapkinBackground background(String image) {
             ImageIcon icon = getBackgroundImage(RESOURCE_PATH + image);
             return new NapkinBackground(icon);
         }
 
-        private static ImageIcon getBackgroundImage(String name) {
+        public static ImageIcon getBackgroundImage(String name) {
             URL resource = NapkinLookAndFeel.class.getResource(name);
             if (resource == null) {
-                throw new NullPointerException(
-                        "no resource found for: " + name);
+                throw new NullPointerException("no resource found for: " + name);
             }
             Image image = Toolkit.getDefaultToolkit().getImage(resource);
             return new ImageIcon(image, name);
@@ -440,8 +447,8 @@ public class NapkinTheme {
         }
 
         /**
-         * Sets the current theme, looked up by name.  This name must be either
-         * in the default lists of themes, or have been added.
+         * Sets the current theme, looked up by name.  
+         * This name must be either in the default lists of themes, or have been added.
          *
          * @param themeName The name of the theme.
          *
@@ -465,12 +472,11 @@ public class NapkinTheme {
             themes.put(theme.getName(), theme);
         }
 
-        static Font tryToLoadFont(String fontName) {
+        public static Font tryToLoadFont(String fontName) {
             Font result = null;
             try {
                 String fontRes = RESOURCE_PATH + fontName;
-                InputStream fontDef =
-                        NapkinLookAndFeel.class.getResourceAsStream(fontRes);
+                InputStream fontDef = NapkinLookAndFeel.class.getResourceAsStream(fontRes);
                 if (fontDef != null) {
                     result = Font.createFont(Font.TRUETYPE_FONT, fontDef);
                 } else {
@@ -487,6 +493,7 @@ public class NapkinTheme {
             } catch (IOException e) {
                 LOG.log(Level.WARNING, "getting font " + fontName, e);
             }
+            
             return result;
         }
     }

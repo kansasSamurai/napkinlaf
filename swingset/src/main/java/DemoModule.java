@@ -38,21 +38,26 @@
  * @(#)DemoModule.java	1.19 04/07/26
  */
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.border.*;
-import javax.swing.colorchooser.*;
-import javax.swing.filechooser.*;
-import javax.accessibility.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.util.*;
-import java.io.*;
-import java.applet.*;
-import java.net.*;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JApplet;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.SoftBevelBorder;
 
 /**
  * A generic SwingSet2 demo module
@@ -62,12 +67,15 @@ import java.net.*;
  */
 public class DemoModule extends JApplet {
 
+    private static final long serialVersionUID = 1L;
+
     // The preferred size of the demo
     private int PREFERRED_WIDTH = 680;
     private int PREFERRED_HEIGHT = 600;
 
-    Border loweredBorder = new CompoundBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED),
-					      new EmptyBorder(5,5,5,5));
+    Border loweredBorder = new CompoundBorder(
+            new SoftBevelBorder(SoftBevelBorder.LOWERED),
+            new EmptyBorder(5,5,5,5));
 
     // Premade convenience dimensions, for use wherever you need 'em.
     public static Dimension HGAP2 = new Dimension(2,1);
@@ -101,117 +109,120 @@ public class DemoModule extends JApplet {
     private ResourceBundle bundle = null;
 
     public DemoModule(SwingSet2 swingset) {
-	this(swingset, null, null);
+        this(swingset, null, null);
     }
 
     public DemoModule(SwingSet2 swingset, String resourceName, String iconPath) {
         UIManager.put("swing.boldMetal", Boolean.FALSE);
-	panel = new JPanel();
-	panel.setLayout(new BorderLayout());
 
-	this.resourceName = resourceName;
-	this.iconPath = iconPath;
-	this.swingset = swingset;
+        panel = new JPanel();
+        panel.setLayout(new BorderLayout());
 
-	loadSourceCode();
+        this.resourceName = resourceName;
+        this.iconPath = iconPath;
+        this.swingset = swingset;
+
+        loadSourceCode();
     }
 
     public String getResourceName() {
-	return resourceName;
+        return resourceName;
     }
 
     public JPanel getDemoPanel() {
-	return panel;
+        return panel;
     }
 
     public SwingSet2 getSwingSet2() {
-	return swingset;
+        return swingset;
     }
 
-
     public String getString(String key) {
-	String value = "nada";
-	if(bundle == null) {
-	    if(getSwingSet2() != null) {
-		bundle = getSwingSet2().getResourceBundle();
-	    } else {
-		bundle = ResourceBundle.getBundle("resources.swingset");
-	    }
-	}
-	try {
-	    value = bundle.getString(key);
-	} catch (MissingResourceException e) {
-	    System.out.println("java.util.MissingResourceException: Couldn't find value for: " + key);
-	}
-	return value;
+        String value = "nada";
+        if (bundle == null) {
+            if (getSwingSet2() != null) {
+                bundle = getSwingSet2().getResourceBundle();
+            } else {
+                bundle = ResourceBundle.getBundle("resources.swingset");
+            }
+        }
+        try {
+            value = bundle.getString(key);
+        } catch (MissingResourceException e) {
+            System.out.println("java.util.MissingResourceException: Cannot find value for: " + key);
+        }
+        return value;
     }
 
     public char getMnemonic(String key) {
-	return (getString(key)).charAt(0);
+        return (getString(key)).charAt(0);
     }
 
     public ImageIcon createImageIcon(String filename, String description) {
-	if(getSwingSet2() != null) {
-	    return getSwingSet2().createImageIcon(filename, description);
-	} else {
-	    String path = "/resources/images/" + filename;
-	    return new ImageIcon(getClass().getResource(path), description);
-	}
+        if (getSwingSet2() != null) {
+            return getSwingSet2().createImageIcon(filename, description);
+        } else {
+            String path = "/resources/images/" + filename;
+            return new ImageIcon(getClass().getResource(path), description);
+        }
     }
 
-
     public String getSourceCode() {
-	return sourceCode;
+        return sourceCode;
     }
 
     public void loadSourceCode() {
-	if(getResourceName() != null) {
-	    String filename = "src/" + getResourceName() + ".java";
-	    sourceCode = new String("<html><body bgcolor=\"#ffffff\"><pre>");
-	    InputStream is;
-	    InputStreamReader isr;
-	    CodeViewer cv = new CodeViewer();
-	    URL url;
+        if (getResourceName() != null) {
+            String filename = "src/" + getResourceName() + ".java";
+            sourceCode = new String("<html><body bgcolor=\"#ffffff\"><pre>");
 
-	    try {
-		url = getClass().getResource(filename);
-		is = url.openStream();
-		isr = new InputStreamReader(is);
-		BufferedReader reader = new BufferedReader(isr);
+            InputStream is;
+            InputStreamReader isr;
+            CodeViewer cv = new CodeViewer();
+            URL url;
 
-		// Read one line at a time, htmlize using super-spiffy
-		// html java code formating utility from www.CoolServlets.com
-		String line = reader.readLine();
-		while(line != null) {
-		    sourceCode += cv.syntaxHighlight(line) + " \n ";
-		    line = reader.readLine();
-		}
-		sourceCode += new String("</pre></body></html>");
+            try {
+                url = getClass().getResource(filename);
+                is = url.openStream();
+                isr = new InputStreamReader(is);
+                BufferedReader reader = new BufferedReader(isr);
+
+                // Read one line at a time, htmlize using super-spiffy
+                // html java code formating utility from www.CoolServlets.com
+                String line = reader.readLine();
+                while (line != null) {
+                    sourceCode += cv.syntaxHighlight(line) + " \n ";
+                    line = reader.readLine();
+                }
+                sourceCode += new String("</pre></body></html>");
             } catch (Exception ex) {
                 sourceCode = "Could not load file: " + filename;
             }
-	}
+        }
     }
 
     public String getName() {
-	return getString(getResourceName() + ".name");
+        return getString(getResourceName() + ".name");
     };
 
     public Icon getIcon() {
-	return createImageIcon(iconPath, getResourceName() + ".name");
+        return createImageIcon(iconPath, getResourceName() + ".name");
     };
 
     public String getToolTip() {
-	return getString(getResourceName() + ".tooltip");
+        return getString(getResourceName() + ".tooltip");
     };
 
     public void mainImpl() {
-	JFrame frame = new JFrame(getName());
+        
+        getDemoPanel().setPreferredSize(new Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT));
+        
+        JFrame frame = new JFrame(getName());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(new BorderLayout());
-	frame.getContentPane().add(getDemoPanel(), BorderLayout.CENTER);
-	getDemoPanel().setPreferredSize(new Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT));
-	frame.pack();
-	frame.setVisible(true);
+        frame.getContentPane().add(getDemoPanel(), BorderLayout.CENTER);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     public JPanel createHorizontalPanel(boolean threeD) {
@@ -219,7 +230,7 @@ public class DemoModule extends JApplet {
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
         p.setAlignmentY(TOP_ALIGNMENT);
         p.setAlignmentX(LEFT_ALIGNMENT);
-        if(threeD) {
+        if (threeD) {
             p.setBorder(loweredBorder);
         }
         return p;
@@ -230,15 +241,15 @@ public class DemoModule extends JApplet {
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setAlignmentY(TOP_ALIGNMENT);
         p.setAlignmentX(LEFT_ALIGNMENT);
-        if(threeD) {
+        if (threeD) {
             p.setBorder(loweredBorder);
         }
         return p;
     }
 
     public static void main(String[] args) {
-	DemoModule demo = new DemoModule(null);
-	demo.mainImpl();
+        DemoModule demo = new DemoModule(null);
+        demo.mainImpl();
     }
 
     public void init() {
@@ -246,6 +257,8 @@ public class DemoModule extends JApplet {
         getContentPane().add(getDemoPanel(), BorderLayout.CENTER);
     }
 
-    void updateDragEnabled(boolean dragEnabled) {}
+    void updateDragEnabled(boolean dragEnabled) {
+        // Intentionally Empty
+    }
+    
 }
-

@@ -38,14 +38,28 @@
  * @(#)SwingSet2.java	1.50 04/07/26
  */
 
-import net.sourceforge.napkinlaf.NapkinTheme;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.plaf.metal.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,13 +70,56 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.JWindow;
+import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.SingleSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.MetalTheme;
+
+import net.sourceforge.napkinlaf.NapkinTheme;
+import net.sourceforge.napkinlaf.sketch.sketchers.JotSketcher;
+
 /**
  * A demo that shows all of the Swing components.
  *
  * @author Jeff Dinkins
  * @version 1.50 07/26/04
  */
+@SuppressWarnings({"unused","serial","rawtypes","unchecked"})
 public class SwingSet2 extends JPanel {
+    
     String[] demos = {
             "ButtonDemo",
             "ColorChooserDemo",
@@ -213,6 +270,7 @@ public class SwingSet2 extends JPanel {
         });
 
         initializeDemo();
+        
         preloadFirstDemo();
 
         // Show the demo and take down the splash screen. Note that
@@ -233,10 +291,12 @@ public class SwingSet2 extends JPanel {
     public static void main(String[] args) {
         // Create SwingSet on the default monitor
         UIManager.put("swing.boldMetal", Boolean.FALSE);
-        SwingSet2 swingset = new SwingSet2(null, GraphicsEnvironment.
-                getLocalGraphicsEnvironment().
-                getDefaultScreenDevice().
-                getDefaultConfiguration());
+        SwingSet2 swingset = new SwingSet2(
+                null, 
+                GraphicsEnvironment.
+                    getLocalGraphicsEnvironment().
+                    getDefaultScreenDevice().
+                    getDefaultConfiguration());
     }
 
     // *******************************************************
@@ -244,6 +304,31 @@ public class SwingSet2 extends JPanel {
     // *******************************************************
 
     public void initializeDemo() {
+        
+        // A user defined napkin theme; compatible with NapkinLAF 1.3-SNAPSHOT+
+        int scrawlSize = 14;
+        NapkinTheme def = new NapkinTheme(
+                "papersack", "Paper Sack Theme", // Name/Description
+                Color.BLACK, // PenColor : (for drawing lines)
+                Color.RED, // CheckColor : Checkboxes, ProgressBar, and Default Button
+                new Color(0xf50000), // RadioColor :
+                Color.RED, // HighlightColor : (Focus Indicator)
+                new Color(0xff, 0xff, 0x00, 0x80), // RolloverColor : JButton, ...
+                Color.RED, // SelectionColor : SelectedText, Active JFrame/InternalFrame, JMenu, JList, JToolbar
+                new Font("Calibri", Font.PLAIN, scrawlSize),
+                new Font("Segoe UI", Font.BOLD, scrawlSize),
+                //new Font("Consolas", Font.PLAIN, scrawlSize),
+                NapkinTheme.Manager.tryToLoadFont("FeltTipRoman.ttf").deriveFont(Font.BOLD, 18),
+//                scrawl.deriveFont(Font.PLAIN, scrawlSize), // TextFont :
+//                scrawlBold.deriveFont(Font.BOLD, scrawlSize), // BoldTextFont :
+//                fixed.deriveFont(Font.PLAIN, scrawlSize), // FixedFont :
+                new JotSketcher(), 
+                NapkinTheme.Manager.background("napkin.jpg"), // paper 
+                NapkinTheme.Manager.background("erasure.png"), // erasure (mask)
+                NapkinTheme.Manager.background("napkin-original.jpg", 80, 80, 50, 40), // popup paper
+                new Color(0xff, 0xff, 0x00, 0x80)); // popup highlight color
+        NapkinTheme.Manager.addTheme(def);
+
         initLaf = getString("LafMenu.laf_default").trim();
         setLookAndFeel(getLafClass(initLaf));
 
@@ -856,14 +941,13 @@ public class SwingSet2 extends JPanel {
     /** Loads a demo from a classname */
     void loadDemo(String classname) {
         setStatus(getString("Status.loading") + getString(classname + ".name"));
+
         DemoModule demo = null;
         try {
             Class demoClass = Class.forName(classname);
-            Constructor demoConstructor = demoClass
-                    .getConstructor(new Class[]{SwingSet2.class});
-            demo = (DemoModule) demoConstructor
-                    .newInstance(new Object[]{this});
-            addDemo(demo);
+            Constructor demoConstructor = demoClass.getConstructor(new Class[]{SwingSet2.class});
+            demo = (DemoModule) demoConstructor.newInstance(new Object[]{this});
+            this.addDemo(demo);
         } catch (Exception e) {
             System.out.println("Error occurred loading demo: " + classname);
             e.printStackTrace();
@@ -941,6 +1025,7 @@ public class SwingSet2 extends JPanel {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         } else {
             WindowListener l = new WindowAdapter() {
+                @SuppressWarnings("unlikely-arg-type")
                 public void windowClosing(WindowEvent e) {
                     numSSs--;
                     swingSets.remove(this);
@@ -1349,8 +1434,7 @@ public class SwingSet2 extends JPanel {
             this.metalThemeObj = theme;
         }
 
-        protected ChangeThemeAction(SwingSet2 swingset,
-                String theme) {
+        protected ChangeThemeAction(SwingSet2 swingset, String theme) {
             super("ChangeTheme");
             this.swingset = swingset;
             this.napkinThemeName = theme;
@@ -1363,7 +1447,8 @@ public class SwingSet2 extends JPanel {
                 NapkinTheme.Manager.setCurrentTheme(napkinThemeName);
             swingset.updateLookAndFeel();
         }
-    }
+        
+    } // end ChangeThemeAction
 
     class ExitAction extends AbstractAction {
         SwingSet2 swingset;
@@ -1424,18 +1509,14 @@ public class SwingSet2 extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            GraphicsDevice[] gds = GraphicsEnvironment.
-                    getLocalGraphicsEnvironment().
-                    getScreenDevices();
+            GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
             if (screen == ALL_SCREENS) {
                 for (int i = 0; i < gds.length; i++) {
-                    SwingSet2 swingset = new SwingSet2(null,
-                            gds[i].getDefaultConfiguration());
+                    SwingSet2 swingset = new SwingSet2(null, gds[i].getDefaultConfiguration());
                     swingset.setDragEnabled(dragEnabled);
                 }
             } else {
-                SwingSet2 swingset = new SwingSet2(null,
-                        gds[screen].getDefaultConfiguration());
+                SwingSet2 swingset = new SwingSet2(null, gds[screen].getDefaultConfiguration());
                 swingset.setDragEnabled(dragEnabled);
             }
         }
